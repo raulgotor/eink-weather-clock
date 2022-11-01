@@ -1,0 +1,19 @@
+idf_component_register(SRCS
+        "drivers/Config/DEV_Config.c"
+        "drivers/EPD_2in9_V2/EPD_2in9_V2.c"
+        "drivers/spi/spi.c"
+        "display/display.c"
+        "gui/gui.c"
+        "gui/gui_views/gui_view_main.c"
+        "gui/gui_control/gui_control_main.c"
+        "hal/GUI/GUI_Paint.c"
+        "hal/e_ink/e_ink.c"
+        "time/time_tracker.c"
+        "http/http.c"
+        "json/json.c"
+        "wifi.c"
+        "flipclock_110.c"
+        "eink_weather_clock.c"
+
+        INCLUDE_DIRS
+        ".")
