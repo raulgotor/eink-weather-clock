@@ -2,7 +2,9 @@
  *******************************************************************************
  * @file http.c
  *
- * @brief 
+ * @brief This module contains functions to perform different HTTP requests to
+ *        the servers of interest (basically time and weather provider servers)
+ *        and other related stuff such as event handlers
  *
  * @author Raúl Gotor (raulgotor@gmail.com)
  * @date 10.04.22
@@ -81,6 +83,7 @@
 //! @brief Event handler function for HTTP events
 static esp_err_t http_event_handler(esp_http_client_event_t *p_event);
 
+//! @brief Generic HTTP GET request
 static bool execute_get_request(char const * p_url);
 
 /*
@@ -104,6 +107,24 @@ char m_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {};
  *******************************************************************************
  */
 
+/*!
+ * @brief Perform a GET request to the time provider server
+ *
+ * This function performs a GET request at World Time API server. If the request
+ * is successful, tries to parse the `unixtime` field and adds to it the
+ * `raw_offset` field to get the time zone corrected time
+ *
+ * @note As far as I know, the raw_offset doesn't include the summer time offset
+ *       so it is possible that the time is not correct on summer
+ *
+ * @param[out]          p_time              Pointer to return the obtained time
+ *
+ * @return              bool                Operation result
+ * @retval              true                Everything went well
+ * @retval              false               Bad parameter, request failed,
+ *                                          requested key / value pairs not
+ *                                          found at the response
+ */
 bool http_request_time(time_t * const p_time)
 {
         bool success = (NULL != p_time);
@@ -143,12 +164,35 @@ bool http_request_time(time_t * const p_time)
         return success;
 }
 
-bool http_request_weather(weather_t * const p_weather,
+/*!
+ * @brief Perform a GET request to the weather provider server
+ *
+ * This function performs a GET request Open Weather Map server. If the request
+ * is successful, tries to parse the `pressure`, `humidity`, `temperature`,
+ * etc... fields. If parsing any of these fields fails, function will return
+ * fail.
+ *
+ * @param[out]          p_weather           Pointer to return the obtained
+ *                                          weather fields
+ * @param[out]          p_temperature       Pointer to return the obtained
+ *                                          temperature fields
+ * @param[out]          p_humidity          Pointer to return the obtained
+ *                                          humidity
+ * @param[out]          p_pressure          Pointer to return the obtained
+ *                                          pressure
+ *
+ * @return              bool                Operation result
+ * @retval              true                Everything went well
+ * @retval              false               Bad parameter, request failed,
+ *                                          requested key / value pairs not
+ *                                          found at the response
+ */
+ bool http_request_weather(weather_t * const p_weather,
                           temperature_t * const p_temperature,
                           int32_t * const p_humidity,
                           int32_t * const p_pressure)
 {
-
+        // TODO: change atoi to strtol and atof to strtod
         bool success = (NULL != p_weather) &&
                        (NULL != p_temperature) &&
                        (NULL != p_humidity) &&
@@ -172,7 +216,6 @@ bool http_request_weather(weather_t * const p_weather,
         }
 
         if (success) {
-                //TODO: change to strol
                 *p_pressure = atoi(buffer);
                 ESP_LOGD(TAG, "Pressure: %d", *p_pressure);
                 success = json_get_primitive_value(
@@ -182,7 +225,6 @@ bool http_request_weather(weather_t * const p_weather,
         }
 
         if (success) {
-                //TODO: change to strol
                 *p_humidity = atoi(buffer);
                 ESP_LOGD(TAG, "Humidity: %d", *p_humidity);
                 success = json_get_primitive_value(
@@ -192,7 +234,6 @@ bool http_request_weather(weather_t * const p_weather,
         }
 
         if (success) {
-                //TODO: change to strol
                 p_temperature->current = atof(buffer) * 100;
                 ESP_LOGD(TAG, "Temperature: %d", p_temperature->current);
 
@@ -203,7 +244,6 @@ bool http_request_weather(weather_t * const p_weather,
         }
 
         if (success) {
-                //TODO: change to strol
                 p_temperature->minimum = atof(buffer) * 100;
                 ESP_LOGD(TAG, "Temperature_min: %d", p_temperature->minimum);
 
@@ -214,7 +254,6 @@ bool http_request_weather(weather_t * const p_weather,
         }
 
         if (success) {
-                //TODO: change to strol
                 p_temperature->maximum = atof(buffer) * 100;
                 ESP_LOGD(TAG, "Temperature_max: %d", p_temperature->maximum);
 
@@ -259,6 +298,21 @@ bool http_request_weather(weather_t * const p_weather,
  *******************************************************************************
  */
 
+/*!
+ * @brief Generic HTTP GET request
+ *
+ * This function performs a GET request to the specified URL and stores the
+ * response in the module buffer `m_response_buffer` and uses the internal
+ * `http_event_handler` as event handler
+ *
+ * @param[in]           p_url               Pointer to string containing the URL
+ *                                          for the request
+ *
+ * @return              bool                Operation result
+ * @retval              true                Everything went well
+ * @retval              false               Bad pointer, request failed or
+ *                                          response code other than 200
+ */
 static bool execute_get_request(char const * p_url)
 {
         esp_http_client_config_t const http_config = {
@@ -298,7 +352,19 @@ static bool execute_get_request(char const * p_url)
         return (success && (200 == response_code));
 }
 
-static esp_err_t http_event_handler(esp_http_client_event_t *evt)
+/*!
+ * @brief Event handler function for HTTP events
+ *
+ * This function handles different events from the current HTTP request. This
+ * comes from some of the Espresiff examples and has been adjusted as needed
+ *
+ * @param[in]           p_event             Pointer to the incoming event
+ *
+ * @return              esp_err_t           Operation result
+ * @retval              ESP_ERR_OK          Mainly to fullfil the interface
+ *                                          requirements, always return OK
+ */
+static esp_err_t http_event_handler(esp_http_client_event_t * const p_event)
 {
         static char * p_output_buffer;
         static int output_len;
