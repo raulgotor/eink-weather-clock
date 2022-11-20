@@ -1,0 +1,30 @@
+# Kconfig file for app configuration
+
+menu "Application configuration"
+
+    config APPLICATION_API_KEY
+        string
+        prompt "Open Weather Map API key"
+        default "91a6a0c18796114d8b407b7fdb8fcbf9"
+
+    config APPLICATION_CONTINENT
+            string
+            prompt "Continent"
+            default "Europe"
+
+    config APPLICATION_CITY
+            string
+            prompt "City"
+            default "Berlin"
+
+    config APPLICATION_LANGUAGE
+            string
+            prompt "Language for display information (two characters)"
+            default "EN"
+
+    config APPLICATION_WEATHER_REFRESH_FREQUENCY
+        int
+        prompt "Time interval (in minutes) for weather refresh"
+        default 10
+
+endmenu

@@ -38,11 +38,16 @@
  *******************************************************************************
  */
 
-#define TIME_TRACKER_REFRESH_TICKS_FAST     pdMS_TO_TICKS(10 /*sec*/ * 1000 /*ms*/)
-#define TIME_TRACKER_REFRESH_TICKS_SLOW     pdMS_TO_TICKS(60 /*min*/* 60 /*sec*/ * 1000 /*ms*/)
+#define WEATHER_REFRESH_INTERVAL_MIN        CONFIG_APPLICATION_WEATHER_REFRESH_FREQUENCY
+#define WEATHER_REFRESH_INTERVAL_MS         WEATHER_REFRESH_INTERVAL_MIN * 60 /*sec*/ * 1000 /*ms*/
+
+#define WEATHER_REFRESH_TICKS_FAST          pdMS_TO_TICKS(10 /*sec*/ * 1000 /*ms*/)
+#define WEATHER_REFRESH_TICKS_SLOW          pdMS_TO_TICKS(WEATHER_REFRESH_INTERVAL_MS)
 
 #define WEATHER_DESCRIPTION_BUFFER_LEN      (40)
 #define WEATHER_ICON_ID_BUFFER_LEN          (10)
+
+#define DISPLAY_REFRESH_TICKS               pdMS_TO_TICKS(3 /*sec*/ * 1000 /*ms*/)
 
 /*
  *******************************************************************************
@@ -64,7 +69,7 @@
  *******************************************************************************
  */
 
-static void time_resync(void);
+static void time_weather_refresh(void);
 
 static void time_tracker(void);
 
@@ -109,7 +114,7 @@ bool time_tracker_init(void)
 
         if (success) {
                 m_time_tracker_h = xTimerCreate("time_tracker",
-                                                pdMS_TO_TICKS(1000),
+                                                DISPLAY_REFRESH_TICKS,
                                                 pdTRUE,
                                                 NULL,
                                                 time_tracker);
@@ -118,11 +123,11 @@ bool time_tracker_init(void)
         }
 
         if (success) {
-                m_time_resync_h = xTimerCreate("time_resync",
-                                               pdMS_TO_TICKS(10000),
+                m_time_resync_h = xTimerCreate("time_weather_refresh",
+                                               WEATHER_REFRESH_TICKS_FAST,
                                                pdTRUE,
                                                NULL,
-                                               time_resync);
+                                               time_weather_refresh);
 
                 success = (NULL != m_time_resync_h);
         }
@@ -165,7 +170,7 @@ static void time_tracker_update_time(time_t const time)
  *******************************************************************************
  */
 
-static void time_resync(void) {
+static void time_weather_refresh(void) {
 
         bool weather_success = false;
         bool temp_success = false;
@@ -179,8 +184,6 @@ static void time_resync(void) {
         int32_t pressure;
 
         if ((WIFI_STATUS_CONNECTED == wifi_get_status())) {//} && (m_time_was_set_once)) {
-
-                ESP_LOGI(TAG, "Sending time request");
 
                 time_success = http_request_time(&time);
 
@@ -234,13 +237,13 @@ static void time_resync(void) {
                 }
 
                 if (success && time_success && m_time_was_set_once) {
-                        xTimerChangePeriod(m_time_resync_h, TIME_TRACKER_REFRESH_TICKS_SLOW, 0);
-                        ESP_LOGD(TAG, "setting period to %d seconds", TIME_TRACKER_REFRESH_TICKS_SLOW);
+                        xTimerChangePeriod(m_time_resync_h, WEATHER_REFRESH_TICKS_SLOW, 0);
+                        ESP_LOGD(TAG, "setting period to %d seconds", WEATHER_REFRESH_TICKS_SLOW);
                 }
 
         } else {
-                xTimerChangePeriod(m_time_resync_h, TIME_TRACKER_REFRESH_TICKS_FAST, 0);
-                ESP_LOGD(TAG, "setting period to %d sec, since WiFi status is %d", TIME_TRACKER_REFRESH_TICKS_FAST, wifi_get_status());
+                xTimerChangePeriod(m_time_resync_h, WEATHER_REFRESH_TICKS_FAST, 0);
+                ESP_LOGD(TAG, "setting period to %d sec, since WiFi status is %d", WEATHER_REFRESH_TICKS_FAST, wifi_get_status());
         }
 }
 
