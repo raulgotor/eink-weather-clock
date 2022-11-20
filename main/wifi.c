@@ -31,6 +31,7 @@
 #include "esp_wifi.h"
 #include "esp_netif.h"
 #include "esp_http_client.h"
+#include "display/display.h"
 
 #include "wifi_manager.h"
 #include "wifi.h"

@@ -44,7 +44,5 @@
 
 bool time_tracker_init();
 
-void time_tracker_update_time(time_t const time);
-
 
 #endif //TIME_TRACKER_H

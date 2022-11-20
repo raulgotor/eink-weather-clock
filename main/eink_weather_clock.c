@@ -41,6 +41,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "display/display.h"
 #include "http/http.h"
 
 #include "lvgl/lvgl.h"
@@ -105,15 +106,13 @@ bool flip_clock_app_start(void) {
 
         BaseType_t result;
 
-        // TODO: put some order here, also lvgl can run on a timer
+        //TODO: put some order here, also lvgl can run on a timer
 
         spi_init();
 
         bool success = display_init();
 
         success = success && wifi_init();
-
-        success = success && http_init();
 
         assert(success && "Modules initialization failed");
 

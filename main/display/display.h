@@ -60,8 +60,14 @@ typedef enum {
 
 typedef struct {
         weather_type_t type;
-        char * image_id;
-        char * description;
+        struct {
+                char * data;
+                size_t size;
+        } description_s;
+        struct {
+                char * data;
+                size_t size;
+        } icon_id_s;
 } weather_t;
 
 typedef enum {

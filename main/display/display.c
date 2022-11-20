@@ -347,12 +347,12 @@ static void set_weather_label_and_icon(
         size_t i;
 
         if (success) {
-                lv_label_set_text(p_view_main->weather.p_weather_label, p_weather->description);
+                lv_label_set_text(p_view_main->weather.p_weather_label, p_weather->description_s.data);
 
                 for (i = 0; (m_icon_id_map_len > i) && (!found); ++i) {
 
                         if (0 == strcmp(m_icon_id_map[i].p_image_id,
-                                        p_weather->image_id)) {
+                                        p_weather->icon_id_s.data)) {
 
                                 lv_img_set_src(p_view_main->weather.p_weather_icon,
                                                m_icon_id_map[i].p_image);
@@ -458,7 +458,6 @@ static void display_task(void * p_parameters)
 
                 if ((pdTRUE == queue_result) && (NULL != p_message)) {
 
-                        ESP_LOGI("","message %d",p_message->type);
                         switch (p_message->type) {
                         case DISPLAY_MSG_SET_TIME:
 

@@ -55,8 +55,11 @@ typedef struct
  *******************************************************************************
  */
 
-bool http_init(void);
+bool http_request_weather(weather_t * const p_weather,
+                          temperature_t * const p_temperature,
+                          int32_t * const p_humidity,
+                          int32_t * const p_pressure);
 
-bool http_send_message(http_msg_type_t const type, void * value);
+bool http_request_time(time_t * const p_time);
 
 #endif //HTTP_H
