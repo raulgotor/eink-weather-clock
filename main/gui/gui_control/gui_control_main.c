@@ -77,7 +77,6 @@ bool gui_control_main_init(gui_view_main_t * p_main_view)
 
 bool gui_control_main_set_time(char * time)
 {
-        lv_label_set_text(m_gui_view_main.clock.label, time);
         return true;
 }
 /*

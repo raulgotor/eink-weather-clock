@@ -103,6 +103,9 @@ void app_main(void)
 
 bool flip_clock_app_start(void) {
 
+        BaseType_t result;
+
+        // TODO: put some order here, also lvgl can run on a timer
 
         spi_init();
 
@@ -115,7 +118,6 @@ bool flip_clock_app_start(void) {
         assert(success && "Modules initialization failed");
 
         time_tracker_init();
-        BaseType_t result;
 
         if (success) {
                 result = xTaskCreate(lvgl_task,

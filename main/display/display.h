@@ -56,6 +56,12 @@ typedef enum {
         WEATHER_HEAVY_SNOW_SHOWER,
         WEATHER_MIST,
         WEATHER_COUNT
+} weather_type_t;
+
+typedef struct {
+        weather_type_t type;
+        char * image_id;
+        char * description;
 } weather_t;
 
 typedef enum {
@@ -63,6 +69,7 @@ typedef enum {
         DISPLAY_MSG_SET_WEATHER,
         DISPLAY_MSG_SET_TEMPERATURE,
         DISPLAY_MSG_SET_HUMIDITY,
+        DISPLAY_MSG_SET_PRESSURE,
         DISPLAY_MSG_COUNT
 } display_msg_type_t;
 
@@ -70,9 +77,10 @@ typedef struct {
         display_msg_type_t type;
         union {
                 time_t time;
-                weather_t weather;
-                temperature_t * temperature;
+                weather_t * p_weather;
+                temperature_t * p_temperature;
                 int32_t humidity;
+                int32_t pressure;
         };
 } display_msg_t;
 
@@ -93,10 +101,12 @@ bool display_init(void);
 
 bool display_set_time(time_t const p_time);
 
-bool display_set_weather(weather_t const weather);
+bool display_set_weather(weather_t * const p_weather);
 
 bool display_set_temperature(temperature_t const * p_temperature);
 
 bool display_set_humidity(int32_t const humidity);
+
+bool display_set_pressure(int32_t const pressure);
 
 #endif //DISPLAY_H

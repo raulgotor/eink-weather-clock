@@ -13,7 +13,18 @@ idf_component_register(SRCS
         "json/json.c"
         "wifi.c"
         "flipclock_110.c"
+        "flipclock_48.c"
+        "flipclock_24.c"
+        "atariST_16.c"
         "eink_weather_clock.c"
-
+        "assets/icon_01.c"
+        "assets/icon_02.c"
+        "assets/icon_03.c"
+        "assets/icon_04.c"
+        "assets/icon_09.c"
+        "assets/icon_10.c"
+        "assets/icon_11.c"
+        "assets/icon_13.c"
+        "assets/icon_50.c"
         INCLUDE_DIRS
         ".")

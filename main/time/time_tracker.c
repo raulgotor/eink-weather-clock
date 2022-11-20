@@ -164,6 +164,7 @@ static void time_resync(void) {
                 ESP_LOGI(TAG, "Sending time request");
 
                 success = http_send_message(HTTP_MSG_GET_TIME, NULL);
+                success = http_send_message(HTTP_MSG_GET_WEATHER, NULL);
 
 
                 if (success && m_time_was_set_once) {

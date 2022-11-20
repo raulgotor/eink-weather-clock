@@ -147,7 +147,7 @@ static int32_t json_get_token_id(char const * p_key)
 
                 if (0 == strncmp(m_json_string + m_tokens_list[i].start,
                                  p_key,
-                                 m_tokens_list[i].end - m_tokens_list[i].start)) {
+                                 strlen(p_key))) {
 
                         // warning, narrowing size
                         result = (int32_t)i;

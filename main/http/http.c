@@ -66,14 +66,16 @@
 #define CITY "Berlin"
 #define API_TOKEN "91a6a0c18796114d8b407b7fdb8fcbf9"
 #define WHAT "weather?q="
-#define WEATHER_ENDPOINT "https://api.openweathermap.org/data/2.5/"
-#define WEATHER_URL WEATHER_ENDPOINT WHAT CITY "&appid=" API_TOKEN "&units=metric"
-
+#define WEATHER_ENDPOINT "http://api.openweathermap.org/data/2.5/"
+#define WEATHER_URL WEATHER_ENDPOINT WHAT CITY "&appid=" API_TOKEN "&units=metric&lang=ES"
+//http://api.openweathermap.org/data/2.5/weather?q=Berlin&appid=91a6a0c18796114d8b407b7fdb8fcbf9&units=metric"
 #define TIME_ENDPOINT "http://worldtimeapi.org"
 #define TIME_PATH "/api/timezone"
 #define TIME_QUERY "/Europe/Berlin"
 
-
+#define JSON_VALUES_BUFFER_LEN 40
+#define WEATHER_DESCRIPTION_BUFFER_LEN 40
+#define WEATHER_ICON_ID_BUFFER_LEN 10
 /*
  *******************************************************************************
  * Data types                                                                  *
@@ -114,6 +116,10 @@ QueueHandle_t http_q = NULL;
  */
 
 char local_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {};
+
+static bool http_request_weather(char const ** pp_response);
+
+static bool http_request_time(char const ** pp_response);
 
 /*
  *******************************************************************************
@@ -191,7 +197,7 @@ bool http_send_message(http_msg_type_t const type, void * value)
  *******************************************************************************
  */
 
-static bool http_request_time(char const ** pp_response)
+static bool http_request_weather(char const ** pp_response)
 {
 
         ESP_LOGI(TAG,"Sending data to %s", TIME_ENDPOINT);
@@ -201,10 +207,10 @@ static bool http_request_time(char const ** pp_response)
         // TODO check for null pointer
 
         esp_http_client_config_t const http_config = {
-                        .url = TIME_ENDPOINT TIME_PATH TIME_QUERY,
+                        .url = WEATHER_URL,
                         .event_handler = http_event_handler,
                         .user_data = local_response_buffer,
-                        .buffer_size = 200,
+                        .buffer_size = 500,
                         .method = HTTP_METHOD_GET,
         };
 
@@ -230,6 +236,54 @@ static bool http_request_time(char const ** pp_response)
         return (ESP_OK == esp_result) && (valid_time);
 }
 
+static bool http_request_time(char const ** pp_response)
+{
+
+        esp_http_client_config_t const http_config = {
+                        .url = TIME_ENDPOINT TIME_PATH TIME_QUERY,
+                        .event_handler = http_event_handler,
+                        .user_data = local_response_buffer,
+                        .buffer_size = 200,
+                        .method = HTTP_METHOD_GET,
+        };
+
+        esp_http_client_handle_t const client = esp_http_client_init(&http_config);
+
+        bool valid_time = false;
+        bool success = (NULL != pp_response);
+
+        esp_err_t esp_result = ESP_OK;
+        int code;
+
+        ESP_LOGI(TAG,"Sending data to %s", TIME_ENDPOINT);
+
+        if (success) {
+                esp_result = esp_http_client_perform(client);
+
+                success = (ESP_OK == esp_result);
+        }
+
+        if (success) {
+
+                code = esp_http_client_get_status_code(client);
+
+                if (200 == code) {
+                        ESP_LOGI(TAG, "Response from server: %s", local_response_buffer);
+                        *pp_response = local_response_buffer;
+                        valid_time = true;
+                }
+
+                esp_result = esp_http_client_cleanup(client);
+
+                success = (ESP_OK == esp_result);
+
+        } else {
+                ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(esp_result));
+        }
+
+        return (success) && (valid_time);
+}
+
 /*
  *******************************************************************************
  * Interrupt Service Routines / Tasks / Thread Main Functions                  *
@@ -244,16 +298,24 @@ _Noreturn static void http_task(void *pvParameter)
         wifi_status_t wifi_status;
         char const * p_response = NULL;
         bool success;
-        char buffer[20];
+        char buffer[JSON_VALUES_BUFFER_LEN];
         uint32_t unix_time = 0;
         uint32_t raw_offset_s;
+        int32_t pressure = 0;
+        int32_t humidity = 0;
+        float temp = 0;
+        float temp_min = 0;
+        float temp_max = 0;
+        weather_t * p_weather = NULL;
+        char weather_description[WEATHER_DESCRIPTION_BUFFER_LEN];
+        char weather_icon_id[WEATHER_ICON_ID_BUFFER_LEN];
 
         for (;;) {
                 queue_result = xQueueReceive(http_q, &p_message, portMAX_DELAY);
 
                 wifi_status = wifi_get_status();
 
-                if (pdTRUE == ((queue_result) && (WIFI_STATUS_CONNECTED == wifi_status))) {
+                if (pdTRUE == ((queue_result) && (NULL != p_message) && (WIFI_STATUS_CONNECTED == wifi_status))) {
 
                         switch (p_message->type) {
 
@@ -285,6 +347,98 @@ _Noreturn static void http_task(void *pvParameter)
 
                                 break;
                         case HTTP_MSG_GET_WEATHER:
+
+                                success = http_request_weather(&p_response);
+
+                                if (success) {
+                                        success = json_load(p_response);
+                                }
+
+                                if (success) {
+                                        success = json_get_primitive_value("pressure", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+                                        //TODO: change to strol
+                                        pressure = atoi(buffer);
+                                        success = json_get_primitive_value("humidity", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+                                        //TODO: change to strol
+                                        humidity = atoi(buffer);
+                                        success = json_get_primitive_value("temp", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+                                        //TODO: change to strol
+                                        temp = atof(buffer);
+                                        ESP_LOGI(TAG, "Buff %s", buffer);
+
+                                        success = json_get_primitive_value("temp_min", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+                                        //TODO: change to strol
+                                        temp_min = atof(buffer);
+
+                                        success = json_get_primitive_value("temp_max", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+                                        //TODO: change to strol
+                                        temp_max = atof(buffer);
+                                        success = json_get_string_value("description", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+
+                                        memcpy(weather_description, buffer, WEATHER_DESCRIPTION_BUFFER_LEN);
+
+                                        success = json_get_string_value("icon", buffer, JSON_VALUES_BUFFER_LEN);
+                                }
+
+                                if (success) {
+
+                                        temperature_t * t;
+
+                                        memcpy(weather_icon_id, buffer, WEATHER_ICON_ID_BUFFER_LEN);
+
+                                        display_set_pressure(pressure);
+                                        display_set_humidity(humidity);
+
+                                        t = pvPortMalloc(sizeof(temperature_t));
+
+                                        if (NULL != t) {
+                                                t->current = temp * 100;
+                                                t->minimum = temp_min  * 100;
+                                                t->maximum = temp_max  * 100;
+
+                                                if (!display_set_temperature(t)) {
+                                                        vPortFree(t);
+                                                        t = NULL;
+                                                }
+                                        }
+
+                                        p_weather = pvPortMalloc(sizeof(weather_t));
+
+                                        if (NULL != p_weather) {
+
+                                                p_weather->type = WEATHER_COUNT;
+                                                p_weather->description = weather_description;
+                                                p_weather->image_id = weather_icon_id;
+
+                                                if (!display_set_weather(p_weather)) {
+                                                        vPortFree(p_weather);
+                                                        p_weather = NULL;
+                                                }
+                                        }
+
+                                        ESP_LOGI(TAG, "Humidity: %d, Pressure: %d, Temperature: %f, Temperature Max: %f, Temperature Min: %f",
+                                                 humidity, pressure, temp, temp_max, temp_min);
+
+                                }
+
                                 break;
                         case HTTP_MSG_COUNT:
                                 break;
@@ -294,6 +448,7 @@ _Noreturn static void http_task(void *pvParameter)
 
                 if (pdTRUE == queue_result) {
                         vPortFree(p_message);
+                        p_message = NULL;
                 }
 
                 ESP_LOGI(TAG,"Max stack usage: %d of %d bytes", TASK_STACK_DEPTH - uxTaskGetStackHighWaterMark(NULL), TASK_STACK_DEPTH);
