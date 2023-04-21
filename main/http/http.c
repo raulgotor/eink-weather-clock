@@ -131,8 +131,26 @@ bool http_request_time(time_t * const p_time)
         uint32_t unix_time = 0;
 
         char buffer[JSON_VALUES_BUFFER_LEN];
-        uint32_t raw_offset_s;
 
+         /*
+          * {
+          * "abbreviation": "CEST",
+          * "client_ip": "94.134.61.187",
+          * "datetime": "Apr 21, 2023 7:04:38 PM",
+          * "day_of_week": 5,
+          * "day_of_year": 111,
+          * "dst": true,
+          * "dst_from": "Mar 26, 2023 3:00:00 AM",
+          * "dst_offset": 3600,
+          * "dst_until": "Oct 29, 2023 2:00:00 AM",
+          * "raw_offset": 3600,
+          * "timezone": "Europe/Berlin",
+          * "unixtime": 1682096678,
+          * "utc_datetime": "Apr 21, 2023 7:04:38 PM",
+          * "utc_offset": "+02:00",
+          * "week_number": 16
+          * }
+          */
         if (success) {
                 success = execute_get_request(TIME_ENDPOINT TIME_PATH TIME_URL);
         }
@@ -152,13 +170,17 @@ bool http_request_time(time_t * const p_time)
         }
 
         if (success) {
-                raw_offset_s = atoi(buffer);
-                unix_time += raw_offset_s;
+                unix_time += atoi(buffer);
+
+                success = json_get_primitive_value("dst_offset", buffer, 20);
+        }
+
+        if (success) {
+                unix_time += atoi(buffer);
 
                 *p_time = unix_time;
 
                 ESP_LOGI(TAG, "Unixtime: %d", unix_time);
-
         }
 
         return success;
