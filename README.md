@@ -85,13 +85,33 @@ Basic features are:
 
 ### Hardware Set-up
 
-The hardware can be assembled accordingly to the following wiring schematic.
-For this particular example, a 38 pin ESP32 dev board, (wide, NodeMCU style) was used.
+#### Required components
 
-<img height="" src="docs/eink_weather_clock_wiring.png" width="300"/>
-<img height="" src="docs/eink_weather_clock_sch.png" width="300"/>
+- [Waveshare e-Paper 2.9inch module](https://www.waveshare.com/product/displays/e-paper/2.9inch-e-paper-module.htm?___SID=U)
+- [ESP32 NODEMCU Module](https://www.az-delivery.de/en/products/esp32-developmentboard?_pos=2&_sid=42112ceb9&_ss=r&variant=36542176914) (Or similar, just ensure that dimensions are the same so it can fit on the 3D case)
+- 3D printed case, see section below
 
-> Note: Display length on the image is reduced
+#### 3D printed case
+
+STL files for 3D printing the clock case are provided. The case is divided in
+3 parts for easier printing and assembly. Check `3d` folder in this repo.
+
+#### Assembly
+
+Basically the steps would be:
+1. Plug the cable that comes with the display
+2. Take the front part of the case, and slide the display in to the slots at the rigth side and screw it at the left side.
+3. Clip the middle part of the case to the front part
+4. Connect the cables to the ESP32 board according to the wiring diagram below
+
+      <img height="" src="docs/eink_weather_clock_wiring.png" width="300"/>
+      <img height="" src="docs/eink_weather_clock_sch.png" width="300"/>
+
+      > Note: Display length on the image is reduced
+
+5. Insert the ESP32 board into the slot at the bottom part of the case
+6. Close the case by clip the back part with the middle one.
+
 
 ### Firmware Installation
 
