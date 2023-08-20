@@ -53,7 +53,7 @@
 #define WEATHER_LANGUAGE                    CONFIG_APPLICATION_LANGUAGE
 #define WEATHER_CONTINENT                   CONFIG_APPLICATION_CONTINENT
 #define WEATHER_CITY                        CONFIG_APPLICATION_CITY
-#define WEATHER_API_KEY                     CONFIG_APPLICATION_API_KEY //"91a6a0c18796114d8b407b7fdb8fcbf9"
+#define WEATHER_API_KEY                     CONFIG_APPLICATION_API_KEY
 #define WEATHER_URL                         WEATHER_ENDPOINT "weather?q=" WEATHER_CITY "&appid=" WEATHER_API_KEY "&units=metric&lang=" WEATHER_LANGUAGE
 
 #define TIME_ENDPOINT                       "http://worldtimeapi.org"

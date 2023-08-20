@@ -24,7 +24,6 @@
     <br />
 
    <img class="marginauto" src="assets/clock1.png" width="400" alt="centered image"/>
-   <img class="marginauto" src="assets/clock2.png" width="400" alt="centered image"/>
     <br />
     <a href="https://github.com/raulgotor/eink-weather-clock">View Demo</a>
     ·
@@ -57,10 +56,25 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+This project holds the firmware for a nice retro-looking weather internet clock.
+The information is displayed in an e-Ink display that contributes to the special
+look of the device. The time is displayed in a clear flip-clock style font,
+while the current weather is show as simple icons together with explanatory text.
 
+Additional information such as temperature, humidity and pressure is displayed as well.
+
+The device is connected to the internet wirelessly where it retrieves the time
+and weather information from.
 
 Basic features are:
-
+- ESP32 based, WiFi connection
+- Connectivity handled by WiFi Manager
+- Display managed by LVGL
+- Waveshare e-ink 2.9" Display
+- Time synchronized with World Time API
+- Weather obtained from Open Weather Map
+- 24h time display
+- Weather information: current weather plus temperature, humidity and pressure
 
 ### Built With
 
@@ -69,17 +83,18 @@ Basic features are:
 <!-- GETTING STARTED -->
 ## Getting Started
 
-### Set-up
+### Hardware Set-up
 
 <img height="" src="assets/connections.jpg" width="300"/>
 
-### Installation
+### Firmware Installation
 
 #### Prerequisites
 
 - Install ESP-IDF Framework, follow the walk-through [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/linux-macos-setup.html).
-
-#### Steps
+- Register at [openweathermap.org](https://openweathermap.org) and obtain an API key
+- 
+### Cloning this repository
 
 1. Clone the repo
    ```sh
@@ -90,21 +105,50 @@ Basic features are:
    ```sh
    cd eink-weather-clock && git submodule update --init --recursive
    ```
+Before using your clock, you have to configure and build the firmware with specific
+information such as your Open Weather Map API key and your location. For that, follow the
+following steps
 
+### Firmware configuration
+
+In a terminal, execute
+
+``` idf.py menuconfig```
+
+And then navigate to `Component config / Application configuration`. Once there,
+introduce;
+- Your **Open Weather Map API key**,
+- the **city** where you'd like to have the weather information from,
+- the **continent** this city is at
+- the **language** (in two characters format) in which you'd like the information to be displayed.
+- [Optional] the **refresh interval** of the weather information (defaults to 10 min)
+
+Press `q` to exit, and when asked to save, press `(Y)`.
+
+### Building and flashing the firmware
    
-3. Flash the firmware into the hardware:
+Connect your clock to the computer with the USB cable, and build and flash the firmware:
    ```sh
    idf.py flash
    ```
-
+   
+Optionally, you can also specify the port if you know it. For instance, on MacOS:
+   ```sh
+   idf.py flash -p /dev/tty.SLAB_USBtoUART
+   ```
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+Once firmware is flashed, the clock will boot
 
-### Configuring WiFi credentials
+If a configured network is not available, the device will launch an access point named __eInk-Weather-Clock__. Connect to that
+network using the default password __einkweatherclockpwd__ and a captive portal will pop-up (if it doesn't, manually navigate to address `10.10.0.1` at your browser).
 
+In this window, find your WiFi network name, enter your network password and press __Join__. If everything went well, the clock will connect
+to it and will display the internet retrieved time.
 
- 
+> Note: the default AP SSID and password can be changed at `menuconfig`, and then navigating to `Component config / WiFi Manager Configuration` and setting the `Access Point SSID` and `Access Point Password` respectively
+
 ### Further documentation
 
 
@@ -129,6 +173,8 @@ See the [open issues](https://github.com/raulgotor/eink-weather-clock/issues) fo
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+<img class="marginauto" src="assets/clock2.png" width="400" alt="centered image"/>
 
 <!-- CONTACT -->
 ## Contact
