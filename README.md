@@ -85,7 +85,13 @@ Basic features are:
 
 ### Hardware Set-up
 
-<img height="" src="assets/connections.jpg" width="300"/>
+The hardware can be assembled accordingly to the following wiring schematic.
+For this particular example, a 38 pin ESP32 dev board, (wide, NodeMCU style) was used.
+
+<img height="" src="docs/eink_weather_clock_wiring.png" width="300"/>
+<img height="" src="docs/eink_weather_clock_sch.png" width="300"/>
+
+> Note: Display length on the image is reduced
 
 ### Firmware Installation
 
