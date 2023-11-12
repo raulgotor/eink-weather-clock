@@ -32,6 +32,7 @@ LV_IMG_DECLARE(icon_10)
 LV_IMG_DECLARE(icon_11)
 LV_IMG_DECLARE(icon_13)
 LV_IMG_DECLARE(icon_50)
+LV_IMG_DECLARE(wait)
 
 
 /*
@@ -48,6 +49,8 @@ typedef struct
                 lv_obj_t * min_label;
                 lv_obj_t * sq;
                 lv_obj_t * sq2;
+                lv_obj_t * p_wait_icon;
+                lv_obj_t * wait_label;
 
         } clock;
 

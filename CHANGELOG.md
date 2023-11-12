@@ -7,6 +7,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+* Wait message while retrieving weather and time data
+
+### Fixed
+* Sun icon and time separator were showing on boot before even retrieving the data
+
 ## [0.1.0] - 2023-11-12
 * Initial release
-q

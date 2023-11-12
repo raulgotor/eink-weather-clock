@@ -111,7 +111,8 @@ Basically the steps would be:
 
 5. Insert the ESP32 board into the slot at the bottom part of the case
 6. Close the case by clip the back part with the middle one.
-
+7. Declare it with the macro `LV_IMG_DECLARE(your_asset_name_without_extension)`
+8. It is ready to use!
 
 ### Firmware Installation
 
@@ -177,7 +178,16 @@ to it and will display the internet retrieved time.
 
 ### Further documentation
 
+#### Converting images to be used by the `gui` module
 
+1. Save your image as PNG with the desired size
+2. Go to [image converter](https://lvgl.io/tools/imageconverter) site.
+3. There select:
+   - `CF_INDEXED_1BIT`
+   - C array
+4. Generate the asset and put it under `assets` folder
+5. Add it as a source at the `CMakeLists.txt` file
+6. 
 <!-- ROADMAP -->
 ## Roadmap
 

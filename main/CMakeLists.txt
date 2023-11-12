@@ -17,6 +17,7 @@ idf_component_register(SRCS
         "flipclock_24.c"
         "atariST_16.c"
         "eink_weather_clock.c"
+        "assets/wait.c"
         "assets/icon_00.c"
         "assets/icon_01.c"
         "assets/icon_02.c"

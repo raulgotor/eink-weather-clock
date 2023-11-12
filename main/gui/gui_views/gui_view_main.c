@@ -120,6 +120,8 @@ void gui_view_main_init(void)
 
         m_main_view.clock.hr_label = lv_label_create(lv_scr_act());
         m_main_view.clock.min_label = lv_label_create(lv_scr_act());
+        m_main_view.clock.p_wait_icon = lv_img_create(lv_scr_act());
+        m_main_view.clock.wait_label = lv_label_create(lv_scr_act());
         m_main_view.weather.p_weather_icon = lv_img_create(lv_scr_act());
         m_main_view.weather.p_weather_label = lv_label_create(lv_scr_act());
         m_main_view.weather.p_humidity_label = lv_label_create(lv_scr_act());
@@ -133,12 +135,13 @@ void gui_view_main_init(void)
         m_main_view.weather.p_temperature_min_label = lv_label_create(lv_scr_act());
 #endif
 
-        lv_obj_add_style(m_main_view.clock.hr_label, &m_clock_style, 0);
-        lv_obj_add_style(m_main_view.clock.min_label, &m_clock_style, 0);
         lv_obj_add_style(m_main_view.weather.p_weather_icon, &m_clock_style, 0);
         lv_obj_add_style(m_main_view.weather.p_weather_label, &m_small_style, 0);
         lv_obj_add_style(m_main_view.weather.p_humidity_label, &m_small_style, 0);
         lv_obj_add_style(m_main_view.weather.p_pressure_label, &m_small_style, 0);
+        lv_obj_add_style(m_main_view.clock.hr_label, &m_clock_style, 0);
+        lv_obj_add_style(m_main_view.clock.min_label, &m_clock_style, 0);
+        lv_obj_add_style(m_main_view.clock.wait_label, &m_small_style, 0);
 
 #if defined(GUI_VIEW_MAX_TEMP) && (0 != GUI_VIEW_MAX_TEMP)
         lv_obj_add_style(m_main_view.weather.p_temperature_min_label, &m_small_style, 0);
@@ -148,6 +151,7 @@ void gui_view_main_init(void)
 
         lv_label_set_text(m_main_view.clock.hr_label,"");
         lv_label_set_text(m_main_view.clock.min_label,"");
+        lv_label_set_text(m_main_view.clock.wait_label,"Retrieving time and weather...");
         lv_label_set_text(m_main_view.weather.p_weather_label,"");
         lv_label_set_text(m_main_view.weather.p_humidity_label,"");
         lv_label_set_text(m_main_view.weather.p_pressure_label,"");
@@ -182,6 +186,7 @@ void gui_view_main_init(void)
 #endif
 
         lv_img_set_src(m_main_view.weather.p_weather_icon, &icon_00);
+        lv_img_set_src(m_main_view.clock.p_wait_icon, &wait);
         gui_view_main_relayout();
 
 }
@@ -191,13 +196,23 @@ void gui_view_main_relayout(void)
         if (m_time_is_enabled) {
                 lv_obj_clear_flag(m_main_view.clock.sq, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_clear_flag(m_main_view.clock.sq2, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(m_main_view.clock.p_wait_icon, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(m_main_view.clock.wait_label, LV_OBJ_FLAG_HIDDEN);
         } else {
                 lv_obj_add_flag(m_main_view.clock.sq, LV_OBJ_FLAG_HIDDEN);
                 lv_obj_add_flag(m_main_view.clock.sq2, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(m_main_view.clock.p_wait_icon, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(m_main_view.clock.wait_label, LV_OBJ_FLAG_HIDDEN);
         }
+
+
 
         lv_obj_set_align(m_main_view.clock.hr_label, LV_ALIGN_LEFT_MID);
         lv_obj_set_align(m_main_view.clock.min_label, LV_ALIGN_LEFT_MID);
+
+        lv_obj_set_align(m_main_view.clock.p_wait_icon, LV_ALIGN_CENTER);
+        lv_obj_align_to(m_main_view.clock.wait_label,
+                        m_main_view.clock.p_wait_icon, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
         lv_obj_align_to(m_main_view.clock.min_label,
                         m_main_view.clock.hr_label, LV_ALIGN_OUT_RIGHT_MID, 10 , 0 );
