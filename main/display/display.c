@@ -114,7 +114,7 @@ typedef struct {
 } display_icon_id_map_t;
 
 static display_icon_id_map_t const m_icon_id_map[] = {
-                {.p_image = &icon_01, "01d"},
+                {.p_image = &icon_00, "000"},
                 {.p_image = &icon_01, "01n"},
                 {.p_image = &icon_02, "02d"},
                 {.p_image = &icon_02, "02n"},
@@ -460,6 +460,8 @@ static void display_task(void * p_parameters)
 
                         switch (p_message->type) {
                         case DISPLAY_MSG_SET_TIME:
+
+                                gui_view_enable_time(true);
 
                                 time_p = localtime(&p_message->time);
 

@@ -70,6 +70,7 @@ static lv_style_t m_clock_dot_style;
 static lv_style_t m_small_style;
 static lv_style_t m_icon_style;
 
+static bool m_time_is_enabled = false;
 
 /*
  *******************************************************************************
@@ -91,9 +92,12 @@ void gui_view_main_init(void)
         lv_style_set_line_color(&m_temperature_style, lv_color_black());
         lv_style_set_line_rounded(&m_temperature_style, true);
         lv_style_set_text_font(&m_temperature_style, &flipclock_24);
-        //lv_style_set_border_color(&m_temperature_style, lv_color_black());
-        //lv_style_set_bg_opa(&m_temperature_style, LV_OPA_0);
-        //lv_style_set_border_width(&m_temperature_style, 1);
+
+#if defined(GUI_VIEW_BORDERS_DEBUG) && (0 != GUI_VIEW_BORDERS_DEBUG)
+        lv_style_set_border_color(&m_temperature_style, lv_color_black());
+        lv_style_set_bg_opa(&m_temperature_style, LV_OPA_0);
+        lv_style_set_border_width(&m_temperature_style, 1);
+#endif // defined(GUI_VIEW_BORDERS_DEBUG)
 
         lv_style_init(&m_clock_dot_style);
         lv_style_set_line_rounded(&m_clock_dot_style, false);
@@ -124,7 +128,7 @@ void gui_view_main_init(void)
         m_main_view.clock.sq = lv_obj_create(lv_scr_act());
         m_main_view.clock.sq2 = lv_obj_create(lv_scr_act());
 
-#ifdef MAX_TEMP
+#if defined(GUI_VIEW_MAX_TEMP) && (0 != GUI_VIEW_MAX_TEMP)
         m_main_view.weather.p_temperature_max_label = lv_label_create(lv_scr_act());
         m_main_view.weather.p_temperature_min_label = lv_label_create(lv_scr_act());
 #endif
@@ -135,7 +139,8 @@ void gui_view_main_init(void)
         lv_obj_add_style(m_main_view.weather.p_weather_label, &m_small_style, 0);
         lv_obj_add_style(m_main_view.weather.p_humidity_label, &m_small_style, 0);
         lv_obj_add_style(m_main_view.weather.p_pressure_label, &m_small_style, 0);
-#ifdef MAX_TEMP
+
+#if defined(GUI_VIEW_MAX_TEMP) && (0 != GUI_VIEW_MAX_TEMP)
         lv_obj_add_style(m_main_view.weather.p_temperature_min_label, &m_small_style, 0);
         lv_obj_add_style(m_main_view.weather.p_temperature_max_label, &m_small_style, 0);
 #endif
@@ -147,11 +152,11 @@ void gui_view_main_init(void)
         lv_label_set_text(m_main_view.weather.p_humidity_label,"");
         lv_label_set_text(m_main_view.weather.p_pressure_label,"");
         lv_label_set_text(m_main_view.weather.p_temperature_label,"");
-#ifdef MAX_TEMP
+
+#if defined(GUI_VIEW_MAX_TEMP) && (0 != GUI_VIEW_MAX_TEMP)
         lv_label_set_text(m_main_view.weather.p_temperature_min_label,"");
         lv_label_set_text(m_main_view.weather.p_temperature_max_label,"");
 #endif
-
 
         lv_obj_set_size(m_main_view.clock.sq, 10, 10);
         lv_obj_set_size(m_main_view.clock.sq2, 10, 10);
@@ -159,7 +164,7 @@ void gui_view_main_init(void)
         lv_obj_add_style(m_main_view.clock.sq, &m_clock_dot_style, 0);
         lv_obj_add_style(m_main_view.clock.sq2, &m_clock_dot_style, 0);
 
-#ifdef FLIP_CLOCK_LINE
+#if defined(GUI_VIEW_FLIP_CLOCK_LINE) && (0 != GUI_VIEW_FLIP_CLOCK_LINE)
         lv_obj_t * sq = lv_obj_create(lv_scr_act());
         lv_obj_t * sq2 = lv_obj_create(lv_scr_act());
         lv_obj_t * sq3 = lv_obj_create(lv_scr_act());
@@ -176,13 +181,21 @@ void gui_view_main_init(void)
         lv_obj_align_to(sq2, sq, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
 #endif
 
-        lv_img_set_src(m_main_view.weather.p_weather_icon, &icon_01);
+        lv_img_set_src(m_main_view.weather.p_weather_icon, &icon_00);
         gui_view_main_relayout();
 
 }
 
 void gui_view_main_relayout(void)
 {
+        if (m_time_is_enabled) {
+                lv_obj_clear_flag(m_main_view.clock.sq, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_clear_flag(m_main_view.clock.sq2, LV_OBJ_FLAG_HIDDEN);
+        } else {
+                lv_obj_add_flag(m_main_view.clock.sq, LV_OBJ_FLAG_HIDDEN);
+                lv_obj_add_flag(m_main_view.clock.sq2, LV_OBJ_FLAG_HIDDEN);
+        }
+
         lv_obj_set_align(m_main_view.clock.hr_label, LV_ALIGN_LEFT_MID);
         lv_obj_set_align(m_main_view.clock.min_label, LV_ALIGN_LEFT_MID);
 
@@ -225,6 +238,12 @@ void gui_view_main_relayout(void)
 void gui_view_main_get_view(gui_view_main_t * p_main_view) {
         *p_main_view = m_main_view;
 }
+
+void gui_view_enable_time(bool const enable)
+{
+        m_time_is_enabled = enable;
+}
+
 
 /*
  *******************************************************************************

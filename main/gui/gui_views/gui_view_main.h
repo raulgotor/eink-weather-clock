@@ -22,6 +22,7 @@
  *******************************************************************************
  */
 
+LV_IMG_DECLARE(icon_00)
 LV_IMG_DECLARE(icon_01)
 LV_IMG_DECLARE(icon_02)
 LV_IMG_DECLARE(icon_03)
@@ -91,5 +92,7 @@ void gui_view_main_init(void);
 void gui_view_main_get_view(gui_view_main_t * p_main_view);
 
 void gui_view_main_relayout(void);
+
+void gui_view_enable_time(bool const enable);
 
 #endif //GUI_VIEW_MAIN_H
