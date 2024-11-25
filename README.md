@@ -12,6 +12,7 @@
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fraulgotor%2Feink-weather-clock.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fraulgotor%2Feink-weather-clock?ref=badge_shield)
 
 <!-- PROJECT LOGO -->
 <h3 align="center">e-Ink based Weather Clock</h3>
@@ -55,6 +56,9 @@
 
 
 <!-- ABOUT THE PROJECT -->
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fraulgotor%2Feink-weather-clock.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fraulgotor%2Feink-weather-clock?ref=badge_large)
+
 ## About The Project
 This project holds the firmware for a nice retro-looking weather internet clock.
 The information is displayed in an e-Ink display that contributes to the special
