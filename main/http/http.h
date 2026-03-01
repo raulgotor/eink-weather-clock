@@ -49,7 +49,4 @@ bool http_request_weather(weather_t * const p_weather,
                           int32_t * const p_humidity,
                           int32_t * const p_pressure);
 
-//! @brief Perform a GET request to the time provider server
-bool http_request_time(time_t * const p_time);
-
 #endif //HTTP_H

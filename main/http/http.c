@@ -56,9 +56,6 @@
 #define WEATHER_API_KEY                     CONFIG_APPLICATION_API_KEY
 #define WEATHER_URL                         WEATHER_ENDPOINT "weather?q=" WEATHER_CITY "&appid=" WEATHER_API_KEY "&units=metric&lang=" WEATHER_LANGUAGE
 
-#define TIME_ENDPOINT                       "http://worldtimeapi.org"
-#define TIME_PATH                           "/api/timezone"
-#define TIME_URL                            "/" WEATHER_CONTINENT "/" WEATHER_CITY
 
 #define JSON_VALUES_BUFFER_LEN 40
 
@@ -107,84 +104,6 @@ char m_response_buffer[MAX_HTTP_OUTPUT_BUFFER] = {};
  *******************************************************************************
  */
 
-/*!
- * @brief Perform a GET request to the time provider server
- *
- * This function performs a GET request at World Time API server. If the request
- * is successful, tries to parse the `unixtime` field and adds to it the
- * `raw_offset` field to get the time zone corrected time
- *
- * @note As far as I know, the raw_offset doesn't include the summer time offset
- *       so it is possible that the time is not correct on summer
- *
- * @param[out]          p_time              Pointer to return the obtained time
- *
- * @return              bool                Operation result
- * @retval              true                Everything went well
- * @retval              false               Bad parameter, request failed,
- *                                          requested key / value pairs not
- *                                          found at the response
- */
-bool http_request_time(time_t * const p_time)
-{
-        bool success = (NULL != p_time);
-        uint32_t unix_time = 0;
-
-        char buffer[JSON_VALUES_BUFFER_LEN];
-
-         /*
-          * {
-          * "abbreviation": "CEST",
-          * "client_ip": "94.134.61.187",
-          * "datetime": "Apr 21, 2023 7:04:38 PM",
-          * "day_of_week": 5,
-          * "day_of_year": 111,
-          * "dst": true,
-          * "dst_from": "Mar 26, 2023 3:00:00 AM",
-          * "dst_offset": 3600,
-          * "dst_until": "Oct 29, 2023 2:00:00 AM",
-          * "raw_offset": 3600,
-          * "timezone": "Europe/Berlin",
-          * "unixtime": 1682096678,
-          * "utc_datetime": "Apr 21, 2023 7:04:38 PM",
-          * "utc_offset": "+02:00",
-          * "week_number": 16
-          * }
-          */
-        if (success) {
-                success = execute_get_request(TIME_ENDPOINT TIME_PATH TIME_URL);
-        }
-
-        if (success) {
-                success = json_load(m_response_buffer);
-        }
-
-        if (success) {
-                success = json_get_primitive_value("unixtime", buffer, 20);
-        }
-
-        if (success) {
-                //TODO: change to strol
-                unix_time = atoi(buffer);
-                success = json_get_primitive_value("raw_offset", buffer, 20);
-        }
-
-        if (success) {
-                unix_time += atoi(buffer);
-
-                success = json_get_primitive_value("dst_offset", buffer, 20);
-        }
-
-        if (success) {
-                unix_time += atoi(buffer);
-
-                *p_time = unix_time;
-
-                ESP_LOGI(TAG, "Unixtime: %d", unix_time);
-        }
-
-        return success;
-}
 
 /*!
  * @brief Perform a GET request to the weather provider server

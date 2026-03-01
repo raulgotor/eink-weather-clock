@@ -2,7 +2,7 @@
  *******************************************************************************
  * @file time_tracker.c
  *
- * @brief 
+ * @brief
  *
  * @author Raúl Gotor (raul.gotor@midge-medical.com)
  * @date 25.10.22
@@ -22,6 +22,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <esp_log.h>
+#include "sntp.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -69,11 +70,11 @@
  *******************************************************************************
  */
 
-static void time_weather_refresh(void);
+static void time_weather_refresh(TimerHandle_t xTimer);
 
-static void time_tracker(void);
+static void time_tracker(TimerHandle_t xTimer);
 
-static void time_tracker_update_time(time_t const time);
+static void sntp_sync_cb(struct timeval * tv);
 
 /*
  *******************************************************************************
@@ -90,10 +91,6 @@ static void time_tracker_update_time(time_t const time);
 static char m_weather_description[WEATHER_DESCRIPTION_BUFFER_LEN];
 
 static char m_weather_icon_id[WEATHER_ICON_ID_BUFFER_LEN];
-
-static uint32_t m_base_time_s = 0;
-
-static uint32_t m_last_update_mcu_time_s = 0;
 
 static TimerHandle_t m_time_tracker_h = NULL;
 
@@ -144,6 +141,16 @@ bool time_tracker_init(void)
                 success = (pdPASS == timer_result);
         }
 
+        if (success) {
+                setenv("TZ", CONFIG_APPLICATION_TIMEZONE_POSIX, 1);
+                tzset();
+
+                sntp_set_time_sync_notification_cb(sntp_sync_cb);
+                sntp_setoperatingmode(SNTP_OPMODE_POLL);
+                sntp_setservername(0, "pool.ntp.org");
+                sntp_init();
+        }
+
         return success;
 }
 
@@ -153,15 +160,10 @@ bool time_tracker_init(void)
  *******************************************************************************
  */
 
-static void time_tracker_update_time(time_t const time)
+static void sntp_sync_cb(struct timeval * tv)
 {
-        ESP_LOGI(TAG, "Updating time to %d time", (uint32_t )time);
-
-        uint32_t const mcu_time_now_s = xTaskGetTickCount() / 1000;
-
+        ESP_LOGI(TAG, "SNTP time synced");
         m_time_was_set_once = true;
-        m_base_time_s = time;
-        m_last_update_mcu_time_s = mcu_time_now_s;
 }
 
 /*
@@ -170,7 +172,8 @@ static void time_tracker_update_time(time_t const time)
  *******************************************************************************
  */
 
-static void time_weather_refresh(void) {
+static void time_weather_refresh(TimerHandle_t xTimer) {
+        (void)xTimer;
 
         bool weather_success = false;
         bool temp_success = false;
@@ -178,18 +181,10 @@ static void time_weather_refresh(void) {
         temperature_t * p_temperature = NULL;
 
         bool success;
-        bool time_success;
-        time_t time;
         int32_t humidity;
         int32_t pressure;
 
-        if ((WIFI_STATUS_CONNECTED == wifi_get_status())) {//} && (m_time_was_set_once)) {
-
-                time_success = http_request_time(&time);
-
-                if (time_success) {
-                        time_tracker_update_time(time);
-                }
+        if (WIFI_STATUS_CONNECTED == wifi_get_status()) {
 
                 p_temperature = pvPortMalloc(sizeof(temperature_t));
 
@@ -236,7 +231,7 @@ static void time_weather_refresh(void) {
                         p_temperature = NULL;
                 }
 
-                if (success && time_success && m_time_was_set_once) {
+                if (success && m_time_was_set_once) {
                         xTimerChangePeriod(m_time_resync_h, WEATHER_REFRESH_TICKS_SLOW, 0);
                         ESP_LOGD(TAG, "setting period to %d seconds", WEATHER_REFRESH_TICKS_SLOW);
                 }
@@ -247,14 +242,12 @@ static void time_weather_refresh(void) {
         }
 }
 
-static void time_tracker(void) {
-        uint32_t const mcu_time_now_s = xTaskGetTickCount() / 1000;
-        uint32_t elapsed_s = mcu_time_now_s - m_last_update_mcu_time_s;
-        time_t current_time_unix_s = elapsed_s + m_base_time_s;
+static void time_tracker(TimerHandle_t xTimer) {
+        (void)xTimer;
         bool success = true;
 
         if (m_time_was_set_once) {
-                success = display_set_time(current_time_unix_s);
+                success = display_set_time(time(NULL));
         }
 
         if (!success) {
@@ -263,4 +256,3 @@ static void time_tracker(void) {
 
         ESP_LOGD(TAG,"Task usage: %d of %d bytes", CONFIG_TIMER_TASK_STACK_DEPTH - uxTaskGetStackHighWaterMark(NULL), CONFIG_TIMER_TASK_STACK_DEPTH);
 }
-

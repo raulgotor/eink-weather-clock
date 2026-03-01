@@ -27,4 +27,12 @@ menu "Application configuration"
         prompt "Time interval (in minutes) for weather refresh"
         default 10
 
+    config APPLICATION_TIMEZONE_POSIX
+        string
+        prompt "POSIX timezone string"
+        default "CET-1CEST,M3.5.0,M10.5.0/3"
+        help
+            POSIX timezone string used for local time conversion after SNTP sync.
+            Example for Berlin: CET-1CEST,M3.5.0,M10.5.0/3
+
 endmenu
